@@ -1,13 +1,12 @@
 package com.divtec.blatnoa.scannerqr;
 
+import android.hardware.camera2.CameraDevice;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.common.Barcode;
-
-import java.util.zip.Inflater;
 
 public class QrScanner extends AppCompatActivity {
     private BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
@@ -18,8 +17,10 @@ public class QrScanner extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        cameraView = findViewById(R.id.cameraView);
+        cameraView = new CameraView(this, null);
 
+        System.out.println("QWERTZ" + cameraView);
     }
 }

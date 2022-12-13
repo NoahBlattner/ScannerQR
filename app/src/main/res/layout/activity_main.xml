@@ -11,10 +11,8 @@
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
     <com.divtec.blatnoa.scannerqr.CameraView
-        android:id="@+id/cameraView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:keepScreenOn="true" />
+        android:layout_height="match_parent"/>
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
