@@ -17,7 +17,7 @@
         android:theme="@style/Theme.ScannerQR"
         tools:targetApi="31">
         <activity
-            android:name=".QrScanner"
+            android:name=".QrScannerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true"
             android:label="@string/app_name"
