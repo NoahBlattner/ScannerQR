@@ -1,5 +1,6 @@
 package com.divtec.blatnoa.scannerqr;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.media.Image;
 import android.util.AttributeSet;
@@ -11,6 +12,7 @@ import androidx.annotation.OptIn;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -55,31 +57,57 @@ public class QrScanner implements ImageAnalysis.Analyzer {
 
     @Override
     public void analyze(@NonNull ImageProxy imageProxy) {
+        scanImage(imageProxy);
+    }
+
+    /**
+     * Scan the image in the given image proxy
+     * @param imageProxy The image proxy
+     */
+    private void scanImage(ImageProxy imageProxy) {
+        // Get image from proxy
         @OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
         Image image = imageProxy.getImage();
-        if (image != null) {
+
+
+        if (image != null) { // If image is not null
+            // Create input image
             InputImage inputImage = InputImage.fromMediaImage(image, imageProxy.getImageInfo().getRotationDegrees());
-            scanImage(inputImage);
+
+            // Scan the image
+            scanner.process(inputImage)
+                    .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+                        @Override
+                        public void onSuccess(List<Barcode> barcodes) { // When the scan is successful
+                            if (barcodes.size() > 0) { // If barcodes have been found
+                                // Get the first barcode
+                                result = convertBarcode(barcodes.get(0));
+                            }
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) { // When the scan fails
+                            // Log the error
+                            Log.d("QrScanner", "Error scanning image");
+                            Log.e("QrScanner", e.getMessage());
+                        }
+                    })
+                    .addOnCompleteListener(new OnCompleteListener<List<Barcode>>() {
+                        @Override
+                        public void onComplete(@NonNull Task<List<Barcode>> task) { // When the scan is complete
+                            // Close the image proxy
+                            imageProxy.close();
+                        }
+                    });
         }
     }
 
-    private void scanImage(InputImage image) {
-        Task<List<Barcode>> results = scanner.process(image)
-                .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
-                    @Override
-                    public void onSuccess(List<Barcode> barcodes) {
-                        result = convertBarcode(barcodes.get(0));
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d("QrScanner", "Error scanning image");
-                        Log.e("QrScanner", e.getMessage());
-                    }
-                });
-    }
-
+    /**
+     * Convert a barcode to a QrResult
+     * @param barcode The barcode
+     * @return The QrResult
+     */
     private QrResult convertBarcode(Barcode barcode) {
         QrResult result = new QrResult();
 
@@ -96,6 +124,14 @@ public class QrScanner implements ImageAnalysis.Analyzer {
                 break;
         }
 
+        return result;
+    }
+
+    /**
+     * Get the result of the last scan containing a barcode
+     * @return The latest result
+     */
+    public QrResult getResult() {
         return result;
     }
 }

@@ -5,4 +5,9 @@
     android:layout_height="match_parent"
     tools:context=".QrScannerActivity">
 
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent" />
+
 </FrameLayout>
