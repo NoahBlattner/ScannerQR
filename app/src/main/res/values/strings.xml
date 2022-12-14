@@ -2,4 +2,8 @@
     <string name="app_name">ScannerQR</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dialog_title">Open URL ?</string>
+    <string name="dialog_message">Do you want to open this URL ?</string>
+    <string name="dialog_positive">Yes</string>
+    <string name="dialog_negative">No</string>
 </resources>

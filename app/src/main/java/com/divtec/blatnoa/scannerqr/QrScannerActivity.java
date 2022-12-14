@@ -2,16 +2,14 @@ package com.divtec.blatnoa.scannerqr;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.Camera;
-import androidx.camera.core.CameraProvider;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.CameraXConfig;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -21,7 +19,6 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.security.Permission;
 import java.util.concurrent.Executor;
 
 public class QrScannerActivity extends AppCompatActivity {
@@ -45,7 +42,7 @@ public class QrScannerActivity extends AppCompatActivity {
                 .build();
 
         // Set the scanner
-        scanner = new QrScanner();
+        scanner = new QrScanner(getApplicationContext());
 
         // Request camera permissions
         checkForCameraPermission();

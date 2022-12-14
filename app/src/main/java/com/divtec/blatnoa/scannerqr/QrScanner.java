@@ -2,6 +2,7 @@ package com.divtec.blatnoa.scannerqr;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.Image;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -16,6 +17,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -26,7 +28,7 @@ import java.util.List;
 
 public class QrScanner implements ImageAnalysis.Analyzer {
 
-    public class QrResult {
+    public static class QrResult {
         int type;
         private String title;
         private String value;
@@ -44,15 +46,18 @@ public class QrScanner implements ImageAnalysis.Analyzer {
         }
     }
 
+    private final BarcodeScanner scanner;
+
     private QrResult result = new QrResult();
+    private Context context;
 
     BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE).build();
 
-    private BarcodeScanner scanner;
 
-    public QrScanner() {
+    public QrScanner(Context context) {
         scanner = BarcodeScanning.getClient(options);
+        this.context = context;
     }
 
     @Override
@@ -69,7 +74,6 @@ public class QrScanner implements ImageAnalysis.Analyzer {
         @OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
         Image image = imageProxy.getImage();
 
-
         if (image != null) { // If image is not null
             // Create input image
             InputImage inputImage = InputImage.fromMediaImage(image, imageProxy.getImageInfo().getRotationDegrees());
@@ -82,6 +86,7 @@ public class QrScanner implements ImageAnalysis.Analyzer {
                             if (barcodes.size() > 0) { // If barcodes have been found
                                 // Get the first barcode
                                 result = convertBarcode(barcodes.get(0));
+                                OpenDialog();
                             }
                         }
                     })
@@ -133,5 +138,18 @@ public class QrScanner implements ImageAnalysis.Analyzer {
      */
     public QrResult getResult() {
         return result;
+    }
+
+    private void OpenDialog() {
+        Dialog test = new MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.dialog_title)
+                .setMessage(R.string.dialog_message + result.value)
+                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Respond to positive button press
+                    }
+                })
+                .show();
     }
 }
