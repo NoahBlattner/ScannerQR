@@ -2,8 +2,11 @@ package com.divtec.blatnoa.scannerqr;
 
 
 import android.Manifest;
-import android.content.Context;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Size;
 
@@ -17,16 +20,41 @@ import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.barcode.common.Barcode;
 
 import java.util.concurrent.Executor;
 
 public class QrScannerActivity extends AppCompatActivity {
 
+    /**
+     * Enum for the different states of the camera.
+     */
+    private enum CameraState {
+        RUNNING,
+        PAUSED
+    }
+
+    /**
+     * Constants
+     */
+    private final ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
+            .setTargetResolution(new Size(1280,720))
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build();
+    private final Preview preview = new Preview.Builder()
+            .build();
+    private final CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+    /**
+     * Variables
+     */
     private PreviewView previewView;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-    private CameraSelector cameraSelector;
     private QrScanner scanner;
+    private ProcessCameraProvider cameraProvider;
+    private CameraState state = CameraState.PAUSED;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +64,8 @@ public class QrScannerActivity extends AppCompatActivity {
         // Get the preview view
         previewView = findViewById(R.id.previewView);
 
-        // Set the camera selector
-        cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build();
-
         // Set the scanner
-        scanner = new QrScanner(getApplicationContext());
+        scanner = new QrScanner(this);
 
         // Request camera permissions
         checkForCameraPermission();
@@ -53,16 +76,10 @@ public class QrScannerActivity extends AppCompatActivity {
         // Add the camera provider listener
         cameraProviderFuture.addListener(() -> {
             try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                cameraProvider = cameraProviderFuture.get();
 
                 // Bind the provider to the preview
                 bindPreview(cameraProvider);
-
-                // Initialise the scanner
-                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
-                        .setTargetResolution(new Size(1280,720))
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build();
 
                 // Executor to run on a background thread
                 Executor executor = new Executor() {
@@ -75,7 +92,11 @@ public class QrScannerActivity extends AppCompatActivity {
                 // Run the image analysis on a background thread
                 imageAnalysis.setAnalyzer(executor, scanner);
 
-                cameraProvider.bindToLifecycle((LifecycleOwner)this, CameraSelector.DEFAULT_BACK_CAMERA, imageAnalysis);
+                // Bind the provider to the analysis
+                cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, imageAnalysis);
+
+                // Set the state to running
+                state = CameraState.RUNNING;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -88,15 +109,10 @@ public class QrScannerActivity extends AppCompatActivity {
      * @param cameraProvider the camera provider to bind
      */
     void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-        Preview preview = new Preview.Builder()
-                .build();
-
-        CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                .build();
-
+        // Set the surface provider
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
+        // Bind the provider to the preview
         cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
     }
 
@@ -106,10 +122,121 @@ public class QrScannerActivity extends AppCompatActivity {
      * If not, requests the permission.
      */
     private void checkForCameraPermission() {
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            // request camera permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) { // If camera permission is not granted
+            // Request camera permissions
             requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
+        }
+    }
+
+    /**
+     * Ask permission to open the link from the QR code
+     * @param qrCode the result of the QR code
+     */
+    public void openQrLink(Barcode qrCode) {
+        pauseCamera();
+
+        // Get if the qrcode contains coordinates
+        boolean isLocation = isLocationQrCode(qrCode);
+
+        String message;
+        double latitude = 0;
+        double longitude = 0;
+
+        if (isLocation) { // If the qrcode contains coordinates
+            message = getResources().getString(R.string.dialog_message_geo) + "\n";
+            if (qrCode.getFormat() == Barcode.TYPE_GEO) {
+                message += qrCode.getGeoPoint().getLat() + ", " + qrCode.getGeoPoint().getLng();
+                latitude = qrCode.getGeoPoint().getLat();
+                longitude = qrCode.getGeoPoint().getLng();
+            } else {
+                message += qrCode.getRawValue();
+                String[] numbers = qrCode.getRawValue()
+                        .replaceAll("[^0-9.]", " ").trim().split(" ");
+                latitude = Double.parseDouble(numbers[0]);
+                longitude = Double.parseDouble(numbers[1]);
+            }
+        } else { // If the qrcode contains a link
+            message = getResources().getString(R.string.dialog_message_URL) + "\n"
+                    + qrCode.getUrl().getUrl();
+        }
+
+        double finalLongitude = longitude;
+        double finalLatitude = latitude;
+        Dialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.dialog_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (isLocation) { // If the qrcode contains coordinates
+                            // Open a map in the app
+                            startMapsActivity(finalLongitude, finalLatitude);
+                        } else {
+                            // Try to open the qr code as a link
+                            // TODO Open link in browser
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.dialog_negative, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        resumeCamera();
+                    }
+                })
+                .show();
+    }
+
+    /**
+     * Check if the QR code contains coordinates
+     * @param qrCode the result of the QR code
+     * @return true if the QR code contains coordinates
+     */
+    private boolean isLocationQrCode(Barcode qrCode) {
+        switch (qrCode.getFormat()) {
+            case Barcode.TYPE_GEO: // If the QR code is a geo code
+                return true;
+            case Barcode.TYPE_TEXT: // If the QR code is a text
+                String text = qrCode.getRawValue();
+                if (text.isEmpty()) { // If the text is empty
+                    return false;
+                }
+                // Check if the text contains coordinates
+                return text.matches("^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)\\s*,\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$");
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Start the maps activity with a marker on the coordinates
+     * @param longitude the longitude of the location
+     * @param latitude the latitude of the location
+     */
+    private void startMapsActivity(double latitude, double longitude) {
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("latitude", latitude);
+        intent.putExtra("longitude", longitude);
+        startActivity(intent);
+    }
+
+    /**
+     * Pause the camera
+     */
+    private void pauseCamera() {
+        cameraProvider.unbindAll();
+        state = CameraState.PAUSED;
+    }
+
+    /**
+     * Resume the camera if it was paused
+     */
+    private void resumeCamera() {
+        if (state == CameraState.PAUSED) {
+            cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, imageAnalysis);
+            cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, preview);
+            state = CameraState.RUNNING;
         }
     }
 

@@ -1,5 +1,6 @@
 package com.divtec.blatnoa.scannerqr;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,36 +29,17 @@ import java.util.List;
 
 public class QrScanner implements ImageAnalysis.Analyzer {
 
-    public static class QrResult {
-        int type;
-        private String title;
-        private String value;
-
-        public int getType() {
-            return type;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
     private final BarcodeScanner scanner;
+    private final QrScannerActivity activity;
 
-    private QrResult result = new QrResult();
-    private Context context;
-
+    private Barcode result;
     BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE).build();
 
 
-    public QrScanner(Context context) {
+    public QrScanner(QrScannerActivity activity) {
         scanner = BarcodeScanning.getClient(options);
-        this.context = context;
+        this.activity = activity;
     }
 
     @Override
@@ -85,8 +67,8 @@ public class QrScanner implements ImageAnalysis.Analyzer {
                         public void onSuccess(List<Barcode> barcodes) { // When the scan is successful
                             if (barcodes.size() > 0) { // If barcodes have been found
                                 // Get the first barcode
-                                result = convertBarcode(barcodes.get(0));
-                                OpenDialog();
+                                result = barcodes.get(0);
+                                activity.openQrLink(barcodes.get(0));
                             }
                         }
                     })
@@ -109,47 +91,10 @@ public class QrScanner implements ImageAnalysis.Analyzer {
     }
 
     /**
-     * Convert a barcode to a QrResult
-     * @param barcode The barcode
-     * @return The QrResult
-     */
-    private QrResult convertBarcode(Barcode barcode) {
-        QrResult result = new QrResult();
-
-        switch (barcode.getValueType()){
-            case Barcode.TYPE_WIFI:
-                result.type = Barcode.TYPE_WIFI;
-                result.title = barcode.getWifi().getSsid();
-                result.value = barcode.getWifi().getPassword();
-                break;
-            case Barcode.TYPE_URL:
-                result.type = Barcode.TYPE_URL;
-                result.title = barcode.getUrl().getTitle();
-                result.value = barcode.getUrl().getUrl();
-                break;
-        }
-
-        return result;
-    }
-
-    /**
      * Get the result of the last scan containing a barcode
      * @return The latest result
      */
-    public QrResult getResult() {
+    public Barcode getResult() {
         return result;
-    }
-
-    private void OpenDialog() {
-        Dialog test = new MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.dialog_title)
-                .setMessage(R.string.dialog_message + result.value)
-                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Respond to positive button press
-                    }
-                })
-                .show();
     }
 }
