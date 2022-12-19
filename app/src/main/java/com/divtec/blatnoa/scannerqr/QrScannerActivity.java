@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Size;
+import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.common.Barcode;
 
+import java.net.URL;
 import java.util.concurrent.Executor;
 
 public class QrScannerActivity extends AppCompatActivity {
@@ -166,8 +168,10 @@ public class QrScannerActivity extends AppCompatActivity {
                 longitude = qrCode.getGeoPoint().getLng();
             } else { // If the qrcode is a text qrcode
                 message += qrCode.getRawValue();
-                String[] numbers = qrCode.getRawValue()
-                        .replaceAll("[^0-9.]", " ").trim().split(" ");
+
+                // Clean up and split string containing coordinates
+                String[] numbers = qrCode.getRawValue().replaceAll(" ", "")
+                        .replaceAll("[^0-9. ]", " ").trim().split(" ");
                 latitude = Double.parseDouble(numbers[0]);
                 longitude = Double.parseDouble(numbers[1]);
             }
@@ -189,7 +193,7 @@ public class QrScannerActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         if (isLocation) { // If the qrcode contains coordinates
                             // Open a map in the app
-                            startMapsActivity(finalLongitude, finalLatitude);
+                            startMapsActivity(finalLatitude, finalLongitude);
                         } else {
                             // Try to open the qr code as a link
                             startBrowserActivity(qrCode.getRawValue());
@@ -239,8 +243,18 @@ public class QrScannerActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Start the default browser with the link from the QR code
+     * @param url the link from the QR code
+     */
     private void startBrowserActivity(String url) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        if (!URLUtil.isValidUrl(url)) {
+            url = "https://www.google.com/search?q=" + url;
+        }
+        Uri uri = Uri.parse(url);
+
+        // Start the default browser
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
 

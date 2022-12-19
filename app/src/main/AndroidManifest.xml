@@ -2,9 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Camera permissions and features -->
+    <!-- Permissions and features -->
+    <permission
+        android:name="com.divtec.blatnoa.permission.MAPS_RECEIVE"
+        android:protectionLevel="signature"/>
+    <uses-permission android:name="com.divtec.blatnoa.permission.MAPS_RECEIVE"/>
     <uses-permission android:name="android.permission.CAMERA" />
-
     <uses-feature android:name="android.hardware.camera" />
 
     <application
@@ -30,6 +33,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyB4RymHut0DL6p8K-GGyXfeyhTV9S77wMw" />
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name=".MapsActivity"
