@@ -49,6 +49,7 @@ public class QrScannerActivity extends AppCompatActivity {
     private final Preview preview = new Preview.Builder()
             .build();
     private final CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+    private final String GOOGLE_SEARCH = "https://www.google.com/search?q=";
 
     /**
      * Variables
@@ -249,7 +250,7 @@ public class QrScannerActivity extends AppCompatActivity {
      */
     private void startBrowserActivity(String url) {
         if (!URLUtil.isValidUrl(url)) {
-            url = "https://www.google.com/search?q=" + url;
+            url = GOOGLE_SEARCH + url;
         }
         Uri uri = Uri.parse(url);
 
