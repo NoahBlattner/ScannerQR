@@ -32,6 +32,7 @@ public class QrScannerActivity extends AppCompatActivity {
      * Enum for the different states of the camera.
      */
     private enum CameraState {
+        UNINITIALIZED,
         RUNNING,
         PAUSED
     }
@@ -54,7 +55,7 @@ public class QrScannerActivity extends AppCompatActivity {
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private QrScanner scanner;
     private ProcessCameraProvider cameraProvider;
-    private CameraState state = CameraState.PAUSED;
+    private CameraState state = CameraState.UNINITIALIZED;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +105,20 @@ public class QrScannerActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        resumeCamera();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        pauseCamera();
+    }
+
     /**
      * Bind the camera provider to the preview view
      * @param cameraProvider the camera provider to bind
@@ -145,11 +160,11 @@ public class QrScannerActivity extends AppCompatActivity {
 
         if (isLocation) { // If the qrcode contains coordinates
             message = getResources().getString(R.string.dialog_message_geo) + "\n";
-            if (qrCode.getFormat() == Barcode.TYPE_GEO) {
+            if (qrCode.getValueType() == Barcode.TYPE_GEO) { // If the qrcode is a geo qrcode
                 message += qrCode.getGeoPoint().getLat() + ", " + qrCode.getGeoPoint().getLng();
                 latitude = qrCode.getGeoPoint().getLat();
                 longitude = qrCode.getGeoPoint().getLng();
-            } else {
+            } else { // If the qrcode is a text qrcode
                 message += qrCode.getRawValue();
                 String[] numbers = qrCode.getRawValue()
                         .replaceAll("[^0-9.]", " ").trim().split(" ");
@@ -158,11 +173,14 @@ public class QrScannerActivity extends AppCompatActivity {
             }
         } else { // If the qrcode contains a link
             message = getResources().getString(R.string.dialog_message_URL) + "\n"
-                    + qrCode.getUrl().getUrl();
+                    + qrCode.getRawValue();
         }
 
+        // Create effectively final variables
         double finalLongitude = longitude;
         double finalLatitude = latitude;
+
+        // Create the dialog
         Dialog dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_title)
                 .setMessage(message)
@@ -194,7 +212,7 @@ public class QrScannerActivity extends AppCompatActivity {
      * @return true if the QR code contains coordinates
      */
     private boolean isLocationQrCode(Barcode qrCode) {
-        switch (qrCode.getFormat()) {
+        switch (qrCode.getValueType()) {
             case Barcode.TYPE_GEO: // If the QR code is a geo code
                 return true;
             case Barcode.TYPE_TEXT: // If the QR code is a text
