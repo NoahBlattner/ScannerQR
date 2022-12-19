@@ -192,7 +192,7 @@ public class QrScannerActivity extends AppCompatActivity {
                             startMapsActivity(finalLongitude, finalLatitude);
                         } else {
                             // Try to open the qr code as a link
-                            // TODO Open link in browser
+                            startBrowserActivity(qrCode.getRawValue());
                         }
                     }
                 })
@@ -239,12 +239,19 @@ public class QrScannerActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void startBrowserActivity(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
+    }
+
     /**
      * Pause the camera
      */
     private void pauseCamera() {
-        cameraProvider.unbindAll();
-        state = CameraState.PAUSED;
+        if (state == CameraState.RUNNING) {
+            cameraProvider.unbindAll();
+            state = CameraState.PAUSED;
+        }
     }
 
     /**
