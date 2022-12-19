@@ -1,6 +1,5 @@
 package com.divtec.blatnoa.scannerqr;
 
-
 import android.Manifest;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -208,6 +207,7 @@ public class QrScannerActivity extends AppCompatActivity {
                         resumeCamera();
                     }
                 })
+                .setCancelable(false)
                 .show();
     }
 
