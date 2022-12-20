@@ -3,6 +3,7 @@ package com.divtec.blatnoa.scannerqr;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
 import com.divtec.blatnoa.scannerqr.databinding.ActivityMapsBinding;
@@ -52,11 +53,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+        // Add a marker on the start location and move the camera to it
         LatLng point = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(point).title("Your location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 11));
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(@NonNull LatLng latLng) {
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(latLng).title("Your location"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11));
+            }
+        });
 
     }
 }
