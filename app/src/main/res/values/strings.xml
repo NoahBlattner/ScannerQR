@@ -2,10 +2,16 @@
     <string name="app_name">ScannerQR</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_maps">MapsActivity</string>
+
+    <!-- Dialog -->
     <string name="dialog_title">Open URL ?</string>
     <string name="dialog_message_URL">Do you want to open this URL ?</string>
     <string name="dialog_message_geo">Do you want to open these coordinates ?</string>
     <string name="dialog_positive">Yes</string>
     <string name="dialog_negative">No</string>
-    <string name="title_activity_maps">MapsActivity</string>
+
+    <!-- TextFields -->
+    <string name="tfield_phone_hint">Phone number</string>
+    <string name="tfield_message_hint">Message</string>
 </resources>
