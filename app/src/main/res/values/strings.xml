@@ -11,7 +11,8 @@
     <string name="dialog_positive">Yes</string>
     <string name="dialog_negative">No</string>
 
-    <!-- TextFields -->
+    <!-- Messaging -->
     <string name="tfield_phone_hint">Phone number</string>
     <string name="tfield_message_hint">Message</string>
+    <string name="button_send">Send</string>
 </resources>

@@ -16,6 +16,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    public static final int ZOOM_LEVEL = 9;
+
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
 
@@ -57,7 +59,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng point = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(point).title("Your location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 11));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, ZOOM_LEVEL));
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -65,7 +67,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions().position(latLng).title("Your location"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
             }
         });
 
