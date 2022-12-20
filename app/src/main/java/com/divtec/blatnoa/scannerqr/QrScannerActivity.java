@@ -185,7 +185,7 @@ public class QrScannerActivity extends AppCompatActivity {
         double finalLatitude = latitude;
 
         // Create the dialog
-        Dialog dialog = new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_title)
                 .setMessage(message)
                 .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {

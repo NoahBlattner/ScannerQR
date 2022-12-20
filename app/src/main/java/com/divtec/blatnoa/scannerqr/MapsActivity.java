@@ -36,10 +36,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        Intent intent = getIntent();
-        latitude = intent.getDoubleExtra("latitude", 0);
-        longitude = intent.getDoubleExtra("longitude", 0);
+        latitude = getIntent().getDoubleExtra("latitude", 0);
+        longitude = getIntent().getDoubleExtra("longitude", 0);
 
+        // Pass the latitude and longitude to the fragmentmanager
+        Bundle bundle = new Bundle();
+        bundle.putDouble("latitude", latitude);
+        bundle.putDouble("longitude", longitude);
+        getSupportFragmentManager().setFragmentResult("latLng", bundle);
     }
 
     /**
@@ -55,21 +59,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        // Set th initial marker
+        setInitialMarker();
+
+        // On click of the map
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(@NonNull LatLng latLng) {
+                // Replace the marker
+                setNewMarker(latLng);
+            }
+        });
+
+    }
+
+    /**
+     * Place the initial marker on the map
+     */
+    private void setInitialMarker() {
         // Add a marker on the start location and move the camera to it
         LatLng point = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(point).title("Your location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, ZOOM_LEVEL));
+    }
 
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(@NonNull LatLng latLng) {
-                mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(latLng).title("Your location"));
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
-            }
-        });
-
+    /**
+     * Set a new marker on the map at the given location
+     * @param latLng the location to place the marker at
+     */
+    private void setNewMarker(LatLng latLng) {
+        mMap.clear();
+        mMap.addMarker(new MarkerOptions().position(latLng).title("Your location"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
     }
 }
