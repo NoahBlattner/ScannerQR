@@ -15,4 +15,5 @@
     <string name="tfield_phone_hint">Phone number</string>
     <string name="tfield_message_hint">Message</string>
     <string name="button_send">Send</string>
+    <string name="default_msg">"Join me at: </string>
 </resources>

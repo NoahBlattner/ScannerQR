@@ -38,12 +38,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         latitude = getIntent().getDoubleExtra("latitude", 0);
         longitude = getIntent().getDoubleExtra("longitude", 0);
-
-        // Pass the latitude and longitude to the fragmentmanager
-        Bundle bundle = new Bundle();
-        bundle.putDouble("latitude", latitude);
-        bundle.putDouble("longitude", longitude);
-        getSupportFragmentManager().setFragmentResult("latLng", bundle);
     }
 
     /**
@@ -66,6 +60,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(@NonNull LatLng latLng) {
+                latitude = latLng.latitude;
+                longitude = latLng.longitude;
                 // Replace the marker
                 setNewMarker(latLng);
             }
@@ -82,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(point).title("Your location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, ZOOM_LEVEL));
+        putLngLat();
     }
 
     /**
@@ -92,6 +89,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.clear();
         mMap.addMarker(new MarkerOptions().position(latLng).title("Your location"));
         mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, ZOOM_LEVEL));
+
+        // if zoom level is too low, zoom in
+        if (mMap.getCameraPosition().zoom < ZOOM_LEVEL) {
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL));
+        }
+
+        putLngLat();
+    }
+
+    /**
+     * Put the latitude and longitude in the fragment manager
+     */
+    private void putLngLat() {
+        // Pass the latitude and longitude to the fragmentmanager
+        Bundle bundle = new Bundle();
+        bundle.putDouble("latitude", latitude);
+        bundle.putDouble("longitude", longitude);
+        getSupportFragmentManager().setFragmentResult("latLng", bundle);
     }
 }
