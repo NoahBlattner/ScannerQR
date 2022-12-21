@@ -1,7 +1,6 @@
 package com.divtec.blatnoa.scannerqr;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,7 +23,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.common.Barcode;
 
-import java.net.URL;
 import java.util.concurrent.Executor;
 
 public class QrScannerActivity extends AppCompatActivity {
@@ -238,7 +236,7 @@ public class QrScannerActivity extends AppCompatActivity {
      * @param latitude the latitude of the location
      */
     private void startMapsActivity(double latitude, double longitude) {
-        Intent intent = new Intent(this, MapsActivity.class);
+        Intent intent = new Intent(this, MapsMessageActivity.class);
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
         startActivity(intent);

@@ -1,12 +1,14 @@
 package com.divtec.blatnoa.scannerqr;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
-import com.divtec.blatnoa.scannerqr.databinding.ActivityMapsBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -14,37 +16,39 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     public static final int ZOOM_LEVEL = 9;
 
     private GoogleMap mMap;
-    private ActivityMapsBinding binding;
 
     private double latitude;
     private double longitude;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        binding = ActivityMapsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        // Get the fragment and start loading the map
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
-        latitude = getIntent().getDoubleExtra("latitude", 0);
-        longitude = getIntent().getDoubleExtra("longitude", 0);
+        // Get the coordinates
+        Bundle latLng = getActivity().getIntent().getExtras();
+        if (latLng != null) {
+            latitude = latLng.getDouble("latitude");
+            longitude = latLng.getDouble("longitude");
+        }
+
+        return inflater.inflate(R.layout.fragment_maps, container, false);
     }
 
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -106,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Bundle bundle = new Bundle();
         bundle.putDouble("latitude", latitude);
         bundle.putDouble("longitude", longitude);
-        getSupportFragmentManager().setFragmentResult("latLng", bundle);
+
+        getActivity().getSupportFragmentManager().setFragmentResult("latLng", bundle);
     }
 }
