@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -32,25 +34,10 @@ public class MessageFragment extends Fragment {
     private Bundle latLng;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        latLng = getActivity().getIntent().getExtras();
-
-        // Set a listener to get the new coordinates
-        getParentFragmentManager().setFragmentResultListener("latLng", this,
-            (requestKey, result) -> {
-                if (message != null
-                    && message.getText().toString().startsWith(getString(R.string.default_msg))) {
-                    // Get the bundle from the fragment manager
-                    latLng = result;
-                    updateDefaultMessage();
-                }
-        });
-
-        // Inflate the layout for this fragment
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_message, container, false);
     }
+
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
@@ -62,9 +49,6 @@ public class MessageFragment extends Fragment {
 
         // TODO Remove this
         phoneNum.setText("0766817585");
-
-        // Set the default message
-        updateDefaultMessage();
 
         // Set the onClickListener for the button
         btnSend.setOnClickListener(new View.OnClickListener() {
@@ -83,13 +67,17 @@ public class MessageFragment extends Fragment {
     /**
      * Update the default message with the coordinates
      */
-    private void updateDefaultMessage() {
-        double roundedLatitude = roundTo(latLng.getDouble("latitude"), 4);
-        double roundedLongitude = roundTo(latLng.getDouble("longitude"), 4);
+    public void updateDefaultMessage(double lat, double lng) {
+        String messageText = message.getText().toString();
+        if (messageText.equals("") || messageText.startsWith(getString(R.string.default_msg))) {
 
-        message.setText(getString(R.string.default_msg)
-                + roundedLatitude + ", "
-                + roundedLongitude);
+            double roundedLatitude = roundTo(lat, 4);
+            double roundedLongitude = roundTo(lng, 4);
+
+            message.setText(getString(R.string.default_msg)
+                    + roundedLatitude + ", "
+                    + roundedLongitude);
+        }
     }
 
     /**

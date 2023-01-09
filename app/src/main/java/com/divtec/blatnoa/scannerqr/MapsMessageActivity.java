@@ -9,28 +9,35 @@ import androidx.fragment.app.FragmentResultListener;
 
 public class MapsMessageActivity extends FragmentActivity implements FragmentResultListener {
 
-    FrameLayout mapsFragment;
-    FrameLayout messageFragment;
+    MapsFragment mapsFragment;
+    MessageFragment messageFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_messages);
 
-        // Get the fragments
-        mapsFragment = findViewById(R.id.map_frame);
-        messageFragment = findViewById(R.id.message_frame);
+        // Create the fragments
+        messageFragment = new MessageFragment();
+        mapsFragment = new MapsFragment();
 
         // Load the fragments
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.map_frame, new MapsFragment())
-                .replace(R.id.message_frame, new MessageFragment())
+                .replace(R.id.message_frame, messageFragment)
+                .replace(R.id.map_frame, mapsFragment)
                 .commit();
+
+        getSupportFragmentManager().setFragmentResultListener("latLng", this, this);
+
     }
 
     @Override
     public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-        if (requestKey.equals("latLng")) {
+        if (requestKey.equals("latLng") && messageFragment != null) {
+
+            messageFragment.updateDefaultMessage(
+                    result.getDouble("latitude"),
+                    result.getDouble("longitude"));
         }
     }
 }

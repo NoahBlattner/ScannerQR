@@ -7,13 +7,13 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
-    <FrameLayout
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map_frame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
-    <FrameLayout
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/message_frame"
         android:layout_width="match_parent"
         android:layout_height="0dp"

@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,10 +29,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_maps, container, false);
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         // Get the fragment and start loading the map
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.mapFragment);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -41,8 +47,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             latitude = latLng.getDouble("latitude");
             longitude = latLng.getDouble("longitude");
         }
-
-        return inflater.inflate(R.layout.fragment_maps, container, false);
     }
 
     /**
@@ -54,7 +58,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
         // Set th initial marker
