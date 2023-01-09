@@ -47,7 +47,7 @@ public class MessageFragment extends Fragment {
         message = view.findViewById(R.id.edit_message);
         btnSend = view.findViewById(R.id.btn_send);
 
-        // TODO Remove this
+        // TODO Testing purpose only. Remove this in production
         phoneNum.setText("0766817585");
 
         // Set the onClickListener for the button
@@ -69,6 +69,7 @@ public class MessageFragment extends Fragment {
      */
     public void updateDefaultMessage(double lat, double lng) {
         String messageText = message.getText().toString();
+        // If text field is empty or contains default value
         if (messageText.equals("") || messageText.startsWith(getString(R.string.default_msg))) {
 
             double roundedLatitude = roundTo(lat, 4);

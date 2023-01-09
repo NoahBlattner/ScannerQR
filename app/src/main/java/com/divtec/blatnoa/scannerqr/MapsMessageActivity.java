@@ -27,14 +27,15 @@ public class MapsMessageActivity extends FragmentActivity implements FragmentRes
                 .replace(R.id.map_frame, mapsFragment)
                 .commit();
 
+        // Set result listener
         getSupportFragmentManager().setFragmentResultListener("latLng", this, this);
 
     }
 
     @Override
     public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-        if (requestKey.equals("latLng") && messageFragment != null) {
-
+        // If message fragment is not null
+        if (messageFragment != null) {
             messageFragment.updateDefaultMessage(
                     result.getDouble("latitude"),
                     result.getDouble("longitude"));
